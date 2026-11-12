@@ -1,0 +1,832 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════
+   Styling consumes CSS variables ONLY — every value originates
+   in src/config/theme.js (see the bridge in main.jsx).
+   No hardcoded colors/fonts here. Edit theme.js, not this file.
+   ═══════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+/* ── App shell ── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Left region = voice panel + map + log drawer (everything left of Inspector) */
+.left-region {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Command bar (header, top) ── */
+/* ── Command bar (header, top) — 3-col grid: brand left,
+   search dead-center, telemetry + toggles right. ── */
+.command-bar {
+  position: relative; /* the Cypher panel anchors to the header's bottom edge (16 Aug 26) */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--bg-header);
+}
+.command-bar .brand {
+  justify-self: start;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text);
+  text-shadow: var(--title-glow);
+  white-space: nowrap;
+}
+.command-bar .brand .tm {
+  font-size: 0.5em;
+  vertical-align: super;
+  text-shadow: none;
+}
+.command-bar .search-wrap {
+  justify-self: center;
+  position: relative;
+}
+.command-bar .search {
+  width: 460px;
+  max-width: 45vw;
+  background: var(--bg-base);
+  border-radius: 4px;
+  padding: 6px 12px;
+  padding-right: 64px; /* room for the Cypher chip (16 Aug 26) */
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  outline: none;
+}
+.command-bar .search:focus { background: #141414; }
+/* 16 Aug 26: in Cypher mode the bar BECOMES the entry — a 2-line expanding
+   textarea (template picks + typed Cypher both live here, not in the panel). */
+.command-bar .search.cypher-entry {
+  display: block;
+  box-sizing: border-box;
+  width: 460px;
+  max-width: 45vw;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.45;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}
+/* Beta 2.4 (16 Aug 26): the Cypher chip — pure on/off, subtle, styled like
+   the corner buttons (Search Wiring.md §1). ON = orange glow like the icon-btns. */
+.cypher-chip {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 3px;
+  line-height: 1.4;
+}
+.cypher-chip:hover { color: var(--accent-blue); }
+.cypher-chip.on {
+  color: var(--glow-orange);
+  border-color: rgba(217, 119, 6, 0.5);
+  background: rgba(217, 119, 6, 0.12);
+}
+
+/* ── Cypher panel — floating popout (Beta 2.4, 16 Aug 26 · Search Wiring.md §2) ──
+   Anchored to the BOTTOM of the header (16 Aug 26): the header grows when the
+   Cypher textarea expands, so the panel always starts just below it — it can
+   never overlap the search box. Overlaps everything else below. */
+.cypher-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(32.5vw, 494px); /* 30% wider (16 Aug 26) */
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  z-index: 300;
+  background: var(--bg-header);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cypher-panel .cp-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+/* the panel has NO text entry (16 Aug 26) — the search bar above is the entry */
+.cypher-panel .cp-templates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  max-height: 260px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-base);
+}
+.cypher-panel .cp-template {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+.cypher-panel .cp-template:last-child { border-bottom: none; }
+.cypher-panel .cp-template:hover { color: var(--accent-blue); background: #141414; }
+.cypher-panel .cp-tpl-hint {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+/* dynamic warnings — yellow, ABOVE the templates, pushes them down (16 Aug 26) */
+.cypher-panel .cp-warn {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 6px 8px;
+  border-radius: 3px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.cypher-panel .cp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cypher-panel .cp-subs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.cypher-panel .cp-subs input { accent-color: var(--glow-orange); cursor: pointer; margin: 0; }
+.cypher-panel .cp-hint {
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin: 0;
+}
+/* reference footer — node + edge names (16 Aug 26) */
+.cypher-panel .cp-ref {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border-top: 1px dashed var(--border);
+  padding-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  word-break: break-word;
+}
+.cypher-panel .cp-ref-h {
+  color: var(--text);
+  letter-spacing: 1px;
+  margin-right: 4px;
+}
+.command-bar .header-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Header action buttons — deep blue accent so the chrome isn't all orange. */
+.command-bar .icon-btn {
+  background: var(--bg-base);
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
+  border-radius: 4px;
+  padding: 5px 9px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.command-bar .icon-btn:hover { border-color: var(--glow-orange); color: var(--glow-orange); }
+.command-bar .icon-btn.active {
+  border-color: var(--glow-orange);
+  color: var(--glow-orange);
+  background: rgba(217, 119, 6, 0.15);
+}
+
+/* ── Panel corner toggle (normal / full — 2-position preset) ──
+   Icon-only: no box/border — just the glyph, visible at rest. */
+.panel-corner {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+}
+.corner-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 2px 5px;
+  cursor: pointer;
+  line-height: 1;
+}
+.corner-btn:hover { color: var(--accent-blue); }
+
+/* ── AI Voice panel (left, hidden by default — toggle opens) ── */
+.voice-panel {
+  display: none;
+  position: relative;
+  width: 25vw; /* fixed viewport width — the Viewer can never squeeze it (16 Aug 26) */
+  border-right: 1px solid var(--border);
+  background: var(--bg-base);
+  padding: 14px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.voice-panel.open { display: block; }
+.voice-panel.full { width: 40vw; }
+.voice-panel h3 {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.voice-panel .mic-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-header);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--accent-blue);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+.voice-panel .mic-btn:hover { border-color: var(--accent-blue); }
+.voice-panel .empty {
+  margin-top: 12px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ═══ Marlowe voice chat (Beta 2.5, Build 1, 16 Aug 26 · Marlowe Build.md §8) ═══
+   Flat two-color transcript (no bubbles), mic rings, waveform, keyboard toggle. */
+.voice-panel {
+  display: none;
+  flex-direction: column;
+  overflow: hidden; /* the transcript scrolls, the panel doesn't */
+}
+.voice-panel.open { display: flex; }
+.voice-panel h3 {
+  margin: 0;
+  color: var(--text);
+}
+.vp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+/* transcript — NO bubbles, roles by alignment + color only (locked) */
+.vp-transcript {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+  margin-bottom: 8px;
+}
+.vp-msg { max-width: 100%; }
+.vp-msg.user { align-self: flex-end; text-align: right; }
+.vp-msg.user span {
+  color: #99ccff; /* same lighter blue as the mic/kb/reset icons (16 Aug 26) */
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.vp-msg.assistant {
+  align-self: flex-start;
+  text-align: left;
+  color: #f5c542; /* Marlowe gold — the app's cognition accent */
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+.vp-msg.assistant p { margin: 0 0 4px; }
+.vp-msg.assistant a { color: var(--accent-blue); text-decoration: underline; text-underline-offset: 2px; }
+.vp-msg.assistant code {
+  background: var(--bg-header);
+  padding: 0 3px;
+  border-radius: 2px;
+  color: var(--text);
+}
+.vp-msg.assistant.sleuth { color: #ffc966; } /* sleuth chat text — brighter than Marlowe's gold (17 Aug 26) */
+
+/* tool-call trace line — small muted line above a tool-using reply (Build 2) */
+.vp-tools {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* typing dots */
+.vp-typing { display: inline-flex; gap: 4px; }
+.vp-typing span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f5c542;
+  animation: vpBlink 1.2s infinite;
+}
+.vp-typing span:nth-child(2) { animation-delay: 0.2s; }
+.vp-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes vpBlink { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
+/* keyboard input row — square box, no Send button (Enter submits, 16 Aug 26) */
+.vp-input {
+  display: flex;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+.vp-input input {
+  width: 100%;
+  background: var(--bg-header);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0; /* square */
+  padding: 6px 12px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  outline: none;
+}
+.vp-input input:focus { border-color: var(--accent-blue); }
+
+/* controls row: 1fr · auto · 1fr grid — left group (keyboard + sleuth) hugs
+   the LEFT edge, mic DEAD CENTER, right rail (mute + reset) hugs the RIGHT
+   edge (16 Aug 26 layout, restored 17 Aug 26 with the sleuth chip moved to
+   the left beside the keyboard — user instruction). */
+.vp-controls {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding-top: 6px;
+  flex-shrink: 0;
+}
+.vp-left {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vp-kb {
+  background: none;
+  border: 1px solid transparent;
+  color: #99ccff;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.vp-kb:hover { opacity: 1; color: var(--text); }
+.vp-kb.active { border-color: var(--border); opacity: 1; }
+
+/* sleuth chip — ZoomIn, same compact icon format as the keyboard (17 Aug 26) */
+.vp-sleuth {
+  background: none;
+  border: 1px solid transparent;
+  color: #99ccff;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.vp-sleuth:hover { opacity: 1; color: var(--text); }
+.vp-sleuth.active { border-color: var(--border); opacity: 1; }
+.vp-sleuth-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-style: italic;
+  color: #99ccff; /* same blue as the button icons (17 Aug 26) */
+  margin-left: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* stop (OctagonMinus) — kills a hanging/looping run; same icon-button format */
+.vp-stop {
+  background: none;
+  border: 1px solid transparent;
+  color: #99ccff;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.vp-stop:hover { opacity: 1; color: #ff5555; }
+.vp-stop:disabled { opacity: 0.3; cursor: default; }
+
+/* reset chat — borderless icon, right of the mic; same blue as the keyboard
+   toggle, 30% bigger glyph (16 Aug 26) */
+.vp-reset {
+  background: none;
+  border: 1px solid transparent;
+  color: #99ccff;
+  opacity: 0.7;
+  font-size: 1.24rem; /* 0.95rem × 1.3 — 30% bigger */
+  line-height: 1;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.vp-reset:hover { opacity: 1; color: var(--text); }
+
+/* right rail: mute + reset grouped, mirrors the left group — the 1fr/auto/1fr
+   grid keeps the mic dead-centered (16 Aug 26) */
+.vp-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* mute toggle — same light blue as the other icons; muted = a very thin red
+   strike-through across the speaker (not dimmed, 16 Aug 26) */
+.vp-mute {
+  position: relative;
+  background: none;
+  border: 1px solid transparent;
+  color: #99ccff;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.vp-mute:hover { opacity: 1; color: var(--text); }
+.vp-mute.muted::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 50%;
+  height: 1px;
+  background: #ff5555;
+  transform: rotate(-45deg);
+  pointer-events: none;
+}
+
+/* mic — 3 emanate rings, color states (idle blue · listening green · speaking gold) */
+.vp-mic-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.vp-mic {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: var(--bg-header);
+  color: #99ccff;
+  border: 1px solid rgba(153, 204, 255, 0.4);
+  transition: border-color 0.25s, box-shadow 0.25s, color 0.25s;
+}
+.vp-mic:hover { box-shadow: 0 0 12px rgba(153, 204, 255, 0.25); }
+.vp-mic.listening {
+  border-color: #22c55e;
+  color: #22c55e;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.35);
+}
+.vp-mic.speaking {
+  border-color: #f5c542;
+  color: #f5c542;
+  box-shadow: 0 0 14px rgba(245, 197, 66, 0.35);
+}
+.vp-mic.processing { opacity: 0.45; cursor: default; }
+.vp-mic-icon { pointer-events: none; }
+.vp-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  pointer-events: none;
+  opacity: 0;
+}
+.vp-mic.listening .vp-ring { border-color: #22c55e; animation: vpEmanate 1.5s ease-out infinite; }
+.vp-mic.speaking .vp-ring { border-color: #f5c542; animation: vpEmanate 2.5s ease-out infinite; }
+.vp-mic .r2 { animation-delay: 0.35s !important; }
+.vp-mic .r3 { animation-delay: 0.7s !important; }
+@keyframes vpEmanate {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* waveform — bars pulse while listening (green) / speaking (gold) */
+.vp-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 14px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.vp-wave.listening, .vp-wave.speaking { opacity: 1; }
+.vp-bar {
+  width: 3px;
+  height: 5px;
+  border-radius: 2px;
+  background: var(--accent-blue);
+  animation: vpPulse 0.5s infinite alternate;
+}
+.vp-wave.listening .vp-bar { background: #22c55e; }
+.vp-wave.speaking .vp-bar { background: #f5c542; }
+@keyframes vpPulse { from { height: 4px; } to { height: 12px; } }
+
+/* ── 3D map (center) ── */
+.neural-map {
+  flex: 1;
+  min-width: 0;
+  background: radial-gradient(ellipse at center, #1a0b0c 0%, var(--bg-base) 70%);
+  position: relative;
+}
+.neural-map .placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* ── Log drawer (bottom of left region — spans map + voice width only) ── */
+.log-drawer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+  height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.log-drawer.open { height: 30vh; }
+.log-drawer.open.full { height: 60vh; }
+.log-drawer .log-top {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.log-drawer .tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 10px;
+  flex: 1;
+}
+.log-drawer .tabs button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.log-drawer .tabs button.active {
+  color: var(--text);
+  background: var(--bg-header);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.log-drawer .content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── Viewer (right, full height, ALWAYS ON — layout anchor) ── */
+.viewer {
+  position: relative;
+  width: 25vw; /* fixed viewport width — independent of the voice panel (16 Aug 26) */
+  min-width: 260px;
+  border-left: 1px solid var(--border);
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+}
+.viewer.full { width: 40vw; }
+.viewer .viewer-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin: 14px 14px 0;
+}
+.viewer .section {
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.viewer h3 {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.viewer .empty {
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+.viewer .results {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── Viewer top strip (Beta 2.4, 16 Aug 26 · Search Wiring.md §4) ──
+   Connections LEFT of the search bar · <-Back RIGHT. Back is dead at the
+   bottom (fresh state); Connections inert on state0 (results).
+   padding-right 36px (16 Aug 26): reserves the top-right corner for the ⛶
+   panel-corner toggle (it floats at right:6, ~24px wide) — Back ends before
+   it, the search bar just gets a bit shorter. */
+.viewer .viewer-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 36px 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.viewer .viewer-strip .viewer-search {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 6px;
+  background: #111;
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  outline: none;
+}
+.viewer .viewer-strip .viewer-search:focus { border-color: var(--accent-blue); }
+.viewer .viewer-strip .corner-btn:disabled {
+  color: #4a4a4a;
+  cursor: default;
+}
+.viewer .viewer-strip-query {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* ── state0 results table (Beta 2.4, 16 Aug 26 · Search Wiring.md §4) ── */
+.viewer .results-table { padding: 6px 8px 12px; }
+.viewer .result-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px 4px;
+  cursor: pointer;
+  color: var(--text);
+}
+.viewer .result-row:hover { background: #141414; }
+.viewer .result-row .rr-type {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.5px;
+  color: var(--glow-orange);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin-top: 1px;
+}
+.viewer .result-row .rr-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.viewer .result-row .rr-name {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text);
+  word-break: break-word;
+}
+.viewer .result-row .rr-caption {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: #f5c542;
+}
+.viewer .result-row .rr-meta {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+.viewer .result-row .rr-side {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+.viewer .result-row .rr-score { color: #9acd9a; }

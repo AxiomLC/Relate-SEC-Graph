@@ -1,0 +1,13 @@
+# Public Frontal Lobe on Relate — runtime deps.
+# The graph engine ships inside relate-db (no server, no Docker).
+
+relate-db>=1.0.1
+
+# backend
+fastapi
+uvicorn
+pydantic
+python-dotenv
+
+# semantic search only (query embedding; the 3D map + Cypher need no key)
+openai

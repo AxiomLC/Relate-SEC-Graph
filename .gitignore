@@ -1,0 +1,21 @@
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# secrets
+.env
+
+# node
+node_modules/
+dist/
+
+# Relate store lock files — never commit these (the store itself IS committed)
+data/graph/.cypherlite.lock
+data/graph/.cypherlite.writer
+*.auth-token
+
+# OS junk
+Thumbs.db
+.DS_Store
+*.log

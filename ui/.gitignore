@@ -1,0 +1,12 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# local env — contains no secrets, but is per-machine
+.env.local
+
+# misc
+.DS_Store
+*.log

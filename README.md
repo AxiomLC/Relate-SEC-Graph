@@ -42,7 +42,7 @@ relate --version
 # 2. Python deps
 python -m pip install -r requirements.txt
 
-# 3. Run the backend (it opens data/graph.rl)
+# 3. Run the backend (it opens data/graph/)
 python -m llm_app.main
 
 # 4. In a second terminal, run the UI
@@ -53,8 +53,10 @@ npm run dev
 
 Open the UI at **http://localhost:5188**.
 
-The graph is already built and committed at `data/graph.rl`. You don't need any API keys
-to explore it.
+The graph lives at `data/graph/` (a Relate directory store). If that folder is
+empty, see `data/README.md` — it's built by the ingest and copied in. The 3D
+map and Cypher work with **no API keys**; semantic search needs
+`OPENAI_API_KEY` (the graph's vectors are `text-embedding-3-small`).
 
 ## What's in the graph
 
@@ -84,7 +86,7 @@ closer to SQLite than to a database server. This app leans on four things it doe
 
 | | What it means here |
 |---|---|
-| **Embedded** | The graph is one file. No Docker, no ports, no connection string. |
+| **Embedded** | The graph is one folder. No Docker, no ports, no connection string. |
 | **One statement, three searches** | A single Cypher statement can mix graph traversal, vector similarity, and full-text search. |
 | **MCP built in** | `relate serve --mcp` exposes the graph to any agent. |
 | **Agent guardrails** | Row caps with truncation markers, and typed errors that say whether a retry helps. |
@@ -106,7 +108,7 @@ If you want to talk about how the pipeline works, I'm happy to walk through the 
 │  llm_app/main.py :8020        ← only writer  │
 │  └─ api/mgapp/storage.py                     │
 │     └─ relate-db (in-process library)        │
-│        └─ data/graph.rl  ← one file          │
+│        └─ data/graph/  ← directory store     │
 └─────────────┬────────────────────────────────┘
               │ HTTP
 ┌─────────────┴────────────────────────────────┐
@@ -114,7 +116,7 @@ If you want to talk about how the pipeline works, I'm happy to walk through the 
 └──────────────────────────────────────────────┘
 ```
 
-No Docker. No database server. One file.
+No Docker. No database server. One folder.
 
 ## License
 
