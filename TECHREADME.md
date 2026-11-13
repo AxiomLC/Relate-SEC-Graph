@@ -49,6 +49,7 @@ Measured on the 16 GB dev laptop, 2026-11-13, against the committed demo store
 | **Store on disk** | **311 KB** (9 files) | 16 KB without vectors; 20 chunk embeddings add ~295 KB |
 | **Engine cold start** | **15–17 ms** | import → connect → first query, warm disk cache |
 | | ~145 ms | first run on a cold cache |
+| **Store open (UI badge)** | **69 ms** | what `/health` reports as `open_ms` — the same work, plus the worker thread that owns the connection |
 | **Backend cold start** | **1.2–2.3 s** | dominated by importing FastAPI/pydantic, *not* the database |
 | **Backend RSS** | **60 MB** | after serving `/graph` |
 | **UI dev server** | 181 MB on disk | `node_modules`; Vite itself is a Node process |
