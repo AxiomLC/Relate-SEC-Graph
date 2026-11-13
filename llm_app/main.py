@@ -26,10 +26,13 @@ from relate import Duration, Node, Temporal
 ENCODERS_BY_TYPE[Temporal] = str
 ENCODERS_BY_TYPE[Duration] = str
 
-# make the repo root importable
+# make the repo root AND api/ importable — `mgapp` lives in api/, and
+# read_api imports it at module level, so this must happen before line 37.
 _REPO = Path(__file__).resolve().parents[1]
-if str(_REPO) not in sys.path:
-    sys.path.insert(0, str(_REPO))
+_API = _REPO / "api"
+for _p in (_REPO, _API):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 from llm_app.call_log import call_log  # noqa: E402
 from llm_app.embed import embed_query  # noqa: E402

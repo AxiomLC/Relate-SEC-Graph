@@ -52,6 +52,9 @@ npm run dev
 
 Open the UI at **http://localhost:5188**.
 
+Or just double-click **`start.bat`** — it checks the venv and `node_modules`, then opens
+both windows for you.
+
 The graph lives at `data/graph/` — a Relate **directory store**, committed to this repo.
 Point `RELATE_DB_PATH` somewhere else to open a different one.
 
@@ -67,6 +70,9 @@ with the same model.
 
 # boot the backend in-process and exercise every endpoint the UI calls
 .venv\Scripts\python.exe scripts\smoke_http.py
+
+# cold start, RAM and disk — the numbers in TECHREADME.md
+.venv\Scripts\python.exe scripts\measure_footprint.py
 ```
 
 Both exit non-zero on failure. `scripts/test_read_api.py` builds a throwaway fixture
@@ -162,6 +168,7 @@ AGPL-3.0. See `LICENSE`.
 
 ## Links
 
+- [TECHREADME.md](TECHREADME.md) — architecture, endpoints, measured resource usage
 - [Relate docs](https://relatedb.ai/docs/llms.txt)
 - [Relate on GitHub](https://github.com/relatedb/relate)
 - [Relate hackathon](https://neo4j.com/blog/graph-database/announcing-the-relate-by-neo4j-hackathon-2026-build-ai-agents-on-an-embedded-graph-database/)
