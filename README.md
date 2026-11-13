@@ -13,8 +13,9 @@ connection string.**
 ![Relate SEC Graph — the 3D knowledge map](screenshot.png)
 
 > **Status:** complete and running. The graph ships pre-built in `data/graph/`, so you can
-> clone this repo and have the app up in about two minutes. The ingest pipeline is private —
-> see [What's not here](#whats-not-here).
+> clone this repo and have the app up in about two minutes. The ingest pipeline lives in a
+> private repo and is available to walk through on a demo call — see
+> [What's not here](#whats-not-here).
 
 > *"I've run this same app on three graph databases. Relate is the only one that needs no
 > server — which is why it's the one I'd actually hand to a customer."*
@@ -214,11 +215,13 @@ Three Relate behaviours shaped the code, and all three are worth knowing if you 
 
 ## What's not here
 
-**The ingest pipeline is not in this repo.** It's proprietary — the parsing rules, the
+**The ingest pipeline is not in this repo.** It lives in a private repo,
+`Relate-SEC-Graph-ingest`, built on the Frontal Lobe pipeline — the parsing rules, the
 extraction prompts and the quality checks that make the graph trustworthy took real work to
 get right.
 
-This repo ships a **pre-built graph** so you can run the demo end to end without it.
+**It's available to walk through on a demo call.** This repo ships a **pre-built graph** so
+you can run the app end to end without it.
 
 Because the store is read-only here, the write endpoints (`/ingest`, `/rebuild`,
 `/truncate`, `/restore`, `/delete-ticker`) answer with **HTTP 501** and a message saying so,

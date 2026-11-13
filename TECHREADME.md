@@ -1,4 +1,4 @@
-# TECHREADME — Frontal Lobe on Relate
+# TECHREADME — Relate SEC Graph
 
 Technical detail for the embedded build. For the business framing, see `README.md`.
 
@@ -242,7 +242,8 @@ cd ui && npm run dev
 
 ## What's not here
 
-- **The ingest pipeline.** Proprietary; lives in the private repo. This repo ships a
+- **The ingest pipeline.** Lives in the private repo `Relate-SEC-Graph-ingest`, built on the
+  Frontal Lobe pipeline. Available to walk through on a demo call. This repo ships a
   pre-built store.
 - **The `relate` CLI.** Separate binary. Needed only for the MCP and agent-guardrail
   demos, not for the app.
