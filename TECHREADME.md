@@ -118,6 +118,20 @@ relate --database ./data/graph --read-only --safe \
 Note: safe mode refuses **unlabeled** writes and unbounded reads. A labeled write
 (`CREATE (x:Probe {id:'p1'})`) is allowed — that is the documented policy, not a gap.
 
+**The row cap is a CLI feature, not an engine feature.** `--agent-mode --max-rows`
+belongs to the CLI's one-shot query mode. The MCP server (`relate serve --mcp`) is
+the *same binary in a different mode*, and it applies no cap: a `read_cypher` call
+returns whatever the statement produces, with no `rowCap` field and no `truncated`
+flag. Verified 2026-11-13 — `UNWIND range(1,120) AS i RETURN i` over MCP returned
+all 120 rows, and `MATCH (n) RETURN n` returned all 109 nodes with their full
+1536-float embeddings.
+
+Bounding a result over MCP is therefore the caller's job: write `LIMIT`, or page
+with `ORDER BY … SKIP … LIMIT`. Both work (verified). What MCP does not provide is
+the safety net — an agent that forgets `LIMIT` gets a silent full dump, with nothing
+in the response to say it was cut. Demo the row-cap truncation through the CLI,
+where the in-band `{"kept":N,"total":M}` report actually appears.
+
 ## Relate constraints that shaped the code
 
 Both were found in Phase 0 and are load-bearing — don't "simplify" them away.
