@@ -10,9 +10,10 @@ __pycache__/
 node_modules/
 dist/
 
-# Relate store lock files — never commit these (the store itself IS committed)
-data/graph/.cypherlite.lock
-data/graph/.cypherlite.writer
+# Relate store lock files — never commit these (the store itself IS committed).
+# They live at the store root AND under wal/, so match at any depth.
+**/.cypherlite.lock
+**/.cypherlite.writer
 *.auth-token
 
 # OS junk

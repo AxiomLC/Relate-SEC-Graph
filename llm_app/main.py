@@ -14,9 +14,17 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.encoders import ENCODERS_BY_TYPE
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from relate import Node
+from relate import Duration, Node, Temporal
+
+# Relate returns its own Temporal/Duration objects for datetime()/duration().
+# They are not JSON types and have no isoformat(); str() yields ISO 8601
+# ("2026-11-13T10:15:38Z", "P1D"), which is what the UI expects. Without this,
+# /tickers, /kb and /export fail to encode any node carrying a timestamp.
+ENCODERS_BY_TYPE[Temporal] = str
+ENCODERS_BY_TYPE[Duration] = str
 
 # make the repo root importable
 _REPO = Path(__file__).resolve().parents[1]
@@ -303,6 +311,57 @@ def events(limit: int = 200):
 @app.get("/mcp-calls")
 def mcp_calls(limit: int = 100):
     return call_log.recent(limit=limit)
+
+
+# ── read-only build: write endpoints answer, but refuse ──────
+# The UI ships the full drawer set (ingest, rebuild, truncate, restore).
+# This build has no ingest pipeline and a read-only store, so those panels
+# get a clear 501 instead of a bare 404. The message is what the UI shows.
+_READ_ONLY_DETAIL = (
+    "This is the read-only public build. The graph is pre-built and shipped "
+    "in data/graph/; the ingest pipeline lives in the private repo."
+)
+
+
+@app.get("/jobs")
+def jobs():
+    """No job queue here — an empty list keeps the Log drawer's Jobs tab clean."""
+    return []
+
+
+@app.post("/ingest")
+def ingest_disabled():
+    raise HTTPException(status_code=501, detail=_READ_ONLY_DETAIL)
+
+
+@app.post("/ingest-patents")
+def ingest_patents_disabled():
+    raise HTTPException(status_code=501, detail=_READ_ONLY_DETAIL)
+
+
+@app.post("/ingest-usaspending")
+def ingest_usaspending_disabled():
+    raise HTTPException(status_code=501, detail=_READ_ONLY_DETAIL)
+
+
+@app.post("/delete-ticker")
+def delete_ticker_disabled():
+    raise HTTPException(status_code=501, detail=_READ_ONLY_DETAIL)
+
+
+@app.post("/rebuild")
+def rebuild_disabled():
+    raise HTTPException(status_code=501, detail=_READ_ONLY_DETAIL)
+
+
+@app.post("/truncate")
+def truncate_disabled():
+    raise HTTPException(status_code=501, detail=_READ_ONLY_DETAIL)
+
+
+@app.post("/restore")
+def restore_disabled():
+    raise HTTPException(status_code=501, detail=_READ_ONLY_DETAIL)
 
 
 if __name__ == "__main__":
