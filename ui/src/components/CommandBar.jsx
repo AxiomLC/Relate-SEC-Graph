@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Cog, Scroll, TableOfContents } from 'lucide-react'
-import { runCypherQuery } from '../lib/api.js'
+import { getHealth, runCypherQuery } from '../lib/api.js'
 import { visibleNodeTypes } from '../config/nodeTypes.js'
 import InputDrawer from './InputDrawer.jsx'
 import UtilitiesDrawer from './UtilitiesDrawer.jsx'
@@ -21,7 +21,21 @@ export default function CommandBar({
   const [query, setQuery] = useState('') // the box — semantic text OR Cypher (no saved state)
   const [cypherBusy, setCypherBusy] = useState(false)
   const [cypherInfo, setCypherInfo] = useState(null) // {text} — yellow warning in the bar
+  const [openMs, setOpenMs] = useState(null) // cold start, from /health
   const barRef = useRef(null)
+
+  // Cold-start badge (pillar 1): how long the embedded graph took to open and
+  // answer its first query. Measured server-side at import, so it excludes the
+  // browser and the network.
+  useEffect(() => {
+    let alive = true
+    getHealth()
+      .then((h) => {
+        if (alive && typeof h?.open_ms === 'number') setOpenMs(h.open_ms)
+      })
+      .catch(() => { /* backend down — no badge, no noise */ })
+    return () => { alive = false }
+  }, [])
 
   // NO saved state for the box — closing Cypher mode (chip off, clean run)
   // and Entered searches both refresh it.
@@ -123,6 +137,23 @@ export default function CommandBar({
         {cypherInfo && <div className="cypher-warn">{cypherInfo.text}</div>}
       </div>
       <div className="header-right">
+        {openMs != null && (
+          <div
+            className="cold-start"
+            title="Time to open the embedded graph and run the first query — no server, no Docker, no connection string"
+            style={{
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+              fontSize: '0.68rem',
+              letterSpacing: '0.02em',
+              color: '#9ca3af',
+              whiteSpace: 'nowrap',
+              marginRight: 12,
+              userSelect: 'none',
+            }}
+          >
+            graph ready in {openMs < 10 ? openMs.toFixed(1) : Math.round(openMs)} ms
+          </div>
+        )}
         <button className={`icon-btn${logOpen ? ' active' : ''}`} title="Log — activity, jobs, KB, Cypher" onClick={onToggleLog}>
           <Scroll size={16} />
         </button>

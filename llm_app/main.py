@@ -10,6 +10,7 @@
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -54,6 +55,13 @@ _ = load_dotenv(_REPO / ".env", override=True)
 
 app = FastAPI(title="Frontal Lobe - GraphRAG on Relate", version="1.0.0")
 
+# Cold start, measured once at import: open the embedded store and run the
+# first query. This is the number the UI shows — it is the database's cost,
+# not the web framework's (importing FastAPI dominates total boot time).
+_t_open = time.perf_counter()
+_DB_READY = storage.ping()
+_OPEN_MS = round((time.perf_counter() - _t_open) * 1000, 1)
+
 _origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
@@ -82,7 +90,13 @@ class SemanticRequest(BaseModel):
 # ── read endpoints ───────────────────────────────────────────
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "frontal-lobe-relate", "db": ping_neo4j()}
+    return {
+        "status": "ok",
+        "service": "frontal-lobe-relate",
+        "db": ping_neo4j(),
+        "open_ms": _OPEN_MS,
+        "db_ready": _DB_READY,
+    }
 
 
 @app.get("/stats")

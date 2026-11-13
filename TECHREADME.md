@@ -46,7 +46,7 @@ Measured on the 16 GB dev laptop, 2026-11-13, against the committed demo store
 
 | | Measured | Notes |
 |---|---|---|
-| **Store on disk** | **16 KB** (9 files) | Parquet parts + manifest + WAL |
+| **Store on disk** | **311 KB** (9 files) | 16 KB without vectors; 20 chunk embeddings add ~295 KB |
 | **Engine cold start** | **15–17 ms** | import → connect → first query, warm disk cache |
 | | ~145 ms | first run on a cold cache |
 | **Backend cold start** | **1.2–2.3 s** | dominated by importing FastAPI/pydantic, *not* the database |
@@ -109,6 +109,44 @@ encoders; without them `/tickers`, `/kb` and `/export` return 500.
 | `GET /jobs` | always `[]` — no job queue in this build |
 | `POST /ingest`, `/ingest-patents`, `/ingest-usaspending`, `/delete-ticker`, `/rebuild`, `/truncate`, `/restore` | **501** — read-only build |
 
+## Hybrid query (pillar 2)
+
+One statement does three things: rank chunks by embedding similarity, rank them by
+BM25 keywords, fuse the two lists by reciprocal rank, then walk from each surviving
+chunk to the entities it mentions.
+
+```cypher
+CALL () {
+  MATCH (c:Chunk)
+  SEARCH c IN (VECTOR INDEX fl_chunk_embedding FOR $vec LIMIT $k) SCORE AS score
+  WITH c ORDER BY score DESC, c.id
+  WITH collect(c) AS cs
+  UNWIND range(0, size(cs) - 1) AS i
+  RETURN cs[i] AS c, 'vector' AS list, i + 1 AS rank
+  UNION ALL
+  MATCH (c:Chunk)
+  SEARCH c IN (FULLTEXT INDEX fl_chunk_text FOR $q LIMIT $k) SCORE AS score
+  WITH c ORDER BY score DESC, c.id
+  WITH collect(c) AS cs
+  UNWIND range(0, size(cs) - 1) AS i
+  RETURN cs[i] AS c, 'fulltext' AS list, i + 1 AS rank
+}
+WITH c, sum(1.0 / (60 + rank)) AS rrf,
+     min(CASE list WHEN 'vector' THEN rank END) AS vector_rank,
+     min(CASE list WHEN 'fulltext' THEN rank END) AS fulltext_rank
+ORDER BY rrf DESC, c.id LIMIT $k
+MATCH (c)-[:MENTIONS]->(e:__Entity__)
+RETURN c.id AS chunk, round(rrf, 4) AS rrf, vector_rank, fulltext_rank,
+       e.name AS entity, e.ticker AS ticker
+ORDER BY rrf DESC, chunk
+```
+
+Measured on the demo store: **4 ms**, 8 rows. `scripts/hybrid_demo.py` runs it and
+prints the two single-leg searches first, so you can see what the fusion combines.
+
+Two indexes must exist: `fl_chunk_embedding` (vector) and `fl_chunk_text` (full-text).
+Both are created by `storage.bootstrap()` and by the demo generator.
+
 ## Ports & CORS
 
 | Service | Port |
@@ -128,6 +166,7 @@ editing.
 | `scripts/verify_store.py` | check a store against every read function the UI uses |
 | `scripts/smoke_http.py` | boot the backend in-process, hit every endpoint |
 | `scripts/measure_footprint.py` | cold start, RSS, disk — the numbers above |
+| `scripts/hybrid_demo.py` | vector + full-text + traversal in one statement (needs a key) |
 | `scripts/test_read_api.py` | build a throwaway fixture, test the read functions |
 
 All four exit non-zero on failure. None of them need a running server.

@@ -2,27 +2,27 @@
   "format_version": 5,
   "next_node_id": 109,
   "next_rel_id": 118,
-  "checkpoint_lsn": 230,
-  "commit_ts": 230,
+  "checkpoint_lsn": 251,
+  "commit_ts": 251,
   "node_parts": [
     {
-      "path": "nodes/0-262144-31e0c474519039b9b7b96a32acf0cc33.parquet",
+      "path": "nodes/0-262144-2545fdc325a4ddeb0e4a021c872eb9c8.parquet",
       "id_lo": 0,
       "id_hi": 262144,
       "rows": 109,
-      "bytes": 10042
+      "bytes": 295058
     }
   ],
   "rel_parts": [
     {
-      "path": "relationships/0-262144-25af034713de1d3ebeeb20364c17421c.parquet",
+      "path": "relationships/0-262144-f4eab87fa28881277a8d20403055e287.parquet",
       "id_lo": 0,
       "id_hi": 262144,
       "rows": 118,
       "bytes": 2678
     }
   ],
-  "bytes_per_node": 92.12844036697248,
+  "bytes_per_node": 2706.954128440367,
   "bytes_per_rel": 22.694915254237287,
   "codec": "parquet",
   "indexes": [
@@ -30,6 +30,11 @@
       "name": "fl_chunk_embedding",
       "label": "Chunk",
       "property": "embedding#VECTOR#fl_chunk_embedding"
+    },
+    {
+      "name": "fl_chunk_text",
+      "label": "Chunk",
+      "property": "text#FULLTEXT#fl_chunk_text"
     },
     {
       "name": "fl_node_id",
@@ -67,6 +72,17 @@
         ],
         "properties": [
           "embedding"
+        ],
+        "with_properties": []
+      },
+      "fl_chunk_text": {
+        "kind": "Fulltext",
+        "relationship": false,
+        "labels": [
+          "Chunk"
+        ],
+        "properties": [
+          "text"
         ],
         "with_properties": []
       },
@@ -121,6 +137,21 @@
             "vector.similarity_function": {
               "t": "string",
               "v": "COSINE"
+            }
+          }
+        }
+      },
+      "fl_chunk_text": {
+        "indexConfig": {
+          "t": "map",
+          "v": {
+            "fulltext.analyzer": {
+              "t": "string",
+              "v": "standard-no-stop-words"
+            },
+            "fulltext.eventually_consistent": {
+              "t": "bool",
+              "v": false
             }
           }
         }

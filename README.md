@@ -62,6 +62,10 @@ The 3D map and Cypher work with **no API keys**. Semantic search needs `OPENAI_A
 because the graph's vectors are `text-embedding-3-small` and the query has to be embedded
 with the same model.
 
+With a key, `scripts/hybrid_demo.py` shows the interesting part: one Cypher statement
+that ranks chunks by meaning **and** by keyword, fuses the two rankings, then walks to the
+entities each chunk mentions.
+
 ### Check it before you trust it
 
 ```powershell
