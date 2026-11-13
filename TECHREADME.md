@@ -69,10 +69,24 @@ Memgraph container, before the app starts.
 
 ### The `relate` CLI
 
-Not installed here, so **not measured**. It's a separate Rust binary (installed by
-`install.sh`, not by pip) that opens the same store read-only. Expect a small single
-process, but treat any number as unverified until `scripts/measure_footprint.py` is run
-with it in the picture.
+A separate Rust binary (installed by `install.sh`, not by pip). Needed only for the MCP
+and agent-guardrail demos — the app does not use it.
+
+| | Value |
+|---|---|
+| Disk | **34.9 MB** (`relate-windows-amd64.exe`, v1.0.1) |
+| Installs to | `~/.local/bin/relate.exe` — user-scoped, no admin |
+| Background process | None. No service, no daemon, no registry entry |
+| JVM | Not needed for the native `.exe` |
+| RAM | **Unmeasured** — estimate tens of MB (binary + graph in RAM) |
+
+For scale, the Python engine (`relate-db`) is a 9.9 MB wheel; the CLI is ~3.5× that
+because it bundles the whole engine as a standalone binary.
+
+**PATH caveat:** `install.sh` targets `$HOME/.local/bin`, which is not on the default
+Windows PATH. Either call it by full path or add that folder to PATH (user-level).
+
+Uninstall is deleting one file.
 
 ## Relate constraints that shaped the code
 
