@@ -1,12 +1,12 @@
 {
   "format_version": 5,
-  "next_node_id": 109,
+  "next_node_id": 110,
   "next_rel_id": 118,
-  "checkpoint_lsn": 251,
-  "commit_ts": 251,
+  "checkpoint_lsn": 253,
+  "commit_ts": 253,
   "node_parts": [
     {
-      "path": "nodes/0-262144-2545fdc325a4ddeb0e4a021c872eb9c8.parquet",
+      "path": "nodes/0-262144-00ed8d0767cd0cd1304e6c53688863d9.parquet",
       "id_lo": 0,
       "id_hi": 262144,
       "rows": 109,
@@ -22,7 +22,7 @@
       "bytes": 2678
     }
   ],
-  "bytes_per_node": 2706.954128440367,
+  "bytes_per_node": 2701.904670558799,
   "bytes_per_rel": 22.694915254237287,
   "codec": "parquet",
   "indexes": [

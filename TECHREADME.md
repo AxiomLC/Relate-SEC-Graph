@@ -69,13 +69,14 @@ Memgraph container, before the app starts.
 
 ### The `relate` CLI
 
-A separate Rust binary (installed by `install.sh`, not by pip). Needed only for the MCP
-and agent-guardrail demos — the app does not use it.
+A separate Rust binary, not a pip package. Needed only for the MCP and agent-guardrail
+demos — the app does not use it.
 
 | | Value |
 |---|---|
 | Disk | **34.9 MB** (`relate-windows-amd64.exe`, v1.0.1) |
-| Installs to | `~/.local/bin/relate.exe` — user-scoped, no admin |
+| Installs to | `%LOCALAPPDATA%\Programs\relate\relate.exe`, added to the **user** PATH |
+| Admin rights | None |
 | Background process | None. No service, no daemon, no registry entry |
 | JVM | Not needed for the native `.exe` |
 | RAM | **Unmeasured** — estimate tens of MB (binary + graph in RAM) |
@@ -83,10 +84,38 @@ and agent-guardrail demos — the app does not use it.
 For scale, the Python engine (`relate-db`) is a 9.9 MB wheel; the CLI is ~3.5× that
 because it bundles the whole engine as a standalone binary.
 
-**PATH caveat:** `install.sh` targets `$HOME/.local/bin`, which is not on the default
-Windows PATH. Either call it by full path or add that folder to PATH (user-level).
+**Windows install:** `install.sh` is macOS/Linux only — it exits with `unsupported OS`
+under Git Bash, MSYS2 and Cygwin. Windows uses the PowerShell block from
+[install.md](https://relatedb.ai/docs/get-started/install.md), which makes the same three
+checks (signed `SHA256SUMS`, the signed first line naming the release, the binary's
+SHA-256) and installs to `%LOCALAPPDATA%\Programs\relate`.
 
 Uninstall is deleting one file.
+
+### Pillars 3 and 4 — verified
+
+Run against `data/graph` on 2026-11-13, relate 1.0.1:
+
+```bash
+# MCP: server comes up and answers a tool call
+relate serve --mcp stdio --database ./data/graph --read-only
+#   initialize -> {"name":"relate-mcp","version":"1.0.1"}
+#   tools/list -> read_cypher, get_schema
+#   tools/call read_cypher -> rows from the store
+
+# Row cap: in-band truncation report
+relate --database ./data/graph --read-only --agent-mode --max-rows 3 \
+       --mode envelope "MATCH (n:__Entity__) RETURN n.id AS id"
+#   "rowCap":{"kept":3,"total":84}, "truncated":true
+
+# Safe mode: refuses an unbounded read, exit 6, retryable:false
+relate --database ./data/graph --read-only --safe \
+       --mode envelope "MATCH (n) RETURN n"
+#   syntax error: SafeModeViolation: ... an unbounded read ...
+```
+
+Note: safe mode refuses **unlabeled** writes and unbounded reads. A labeled write
+(`CREATE (x:Probe {id:'p1'})`) is allowed — that is the documented policy, not a gap.
 
 ## Relate constraints that shaped the code
 
