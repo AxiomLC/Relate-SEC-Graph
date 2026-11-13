@@ -5,7 +5,7 @@ import { visibleNodeTypes } from '../config/nodeTypes.js'
 import InputDrawer from './InputDrawer.jsx'
 import UtilitiesDrawer from './UtilitiesDrawer.jsx'
 
-// Top bar: Frontal Lobe™ brand (Courier, orange glow), semantic search,
+// Top bar: Relate SEC Graph brand (Courier, orange glow), semantic search,
 // and toggles: Log drawer · Input · Utilities.
 // The search bar carries a pure on/off "Cypher" chip — OFF = semantic
 // (vector), ON = a plain Cypher textarea. User writes or pastes Cypher
@@ -104,7 +104,7 @@ export default function CommandBar({
   return (
     <div className="command-bar">
       <div className="brand">
-        Frontal Lobe<span className="tm">™</span>
+        Relate SEC Graph
       </div>
       <div className="search-wrap">
         {cypherMode ? (

@@ -35,7 +35,7 @@ export const theme = {
   },
 
   header: {
-    title: 'Frontal Lobe™', // ™ stays small/raised via CSS
+    title: 'Relate SEC Graph',
     // dark orange glow behind the title (2x strength)
     glow: '0 0 16px rgba(217, 119, 6, 0.95), 0 0 48px rgba(217, 119, 6, 0.6)',
   },
